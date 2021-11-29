@@ -6,9 +6,21 @@ from pydantic import BaseModel, EmailStr, Field
 
 from fastapi import status, Body, FastAPI
 from typing import List, Optional
+from db.session import engine
+from db.base import Base
+from core.config import settings
 
 
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
+
+
+def start_application():
+    app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
+    Base.metadata.create_all(bind=engine)
+    return app
+
+
+app = start_application()
 
 
 class PasswordMixin(BaseModel):

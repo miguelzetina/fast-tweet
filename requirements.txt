@@ -2,7 +2,5 @@ pydantic[email]
 fastapi
 uvicorn
 black
-python-jose
-cryptography
-passlib[bcrypt]
-strawberry-graphql[fastapi]
+sqlalchemy
+psycopg2
