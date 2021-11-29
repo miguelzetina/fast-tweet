@@ -8,7 +8,8 @@ ENV PYTHONUNBUFFERED 1
 RUN apk add postgresql-dev \
             gcc \
             musl-dev \
-            g++
+            g++ \
+            libffi-dev
 
 COPY . /usr/src
 RUN pip install --upgrade pip

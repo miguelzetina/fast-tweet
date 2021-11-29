@@ -1,15 +1,13 @@
-import uuid
-from datetime import date, datetime
-from uuid import UUID
+from fastapi import status, Body, Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
 
-from pydantic import BaseModel, EmailStr, Field
-
-from fastapi import status, Body, FastAPI
-from typing import List, Optional
-from db.session import engine
+from db.repository.users import create_new_user, get_user_by_email
+from db.session import engine, get_db
 from db.base import Base
 from core.config import settings
-
+from schemas.users import User, UserRegister
+from schemas.tweets import Tweet
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,44 +19,6 @@ def start_application():
 
 
 app = start_application()
-
-
-class PasswordMixin(BaseModel):
-    password: str = Field(..., min_length=8, max_length=64)
-
-
-class EmailMixin(BaseModel):
-    email: EmailStr = Field(...)
-
-
-class UserLogin(PasswordMixin, EmailMixin):
-    pass
-
-
-class UserData(EmailMixin):
-    first_name: str = Field(..., min_length=1, max_length=50)
-    last_name: str = Field(..., min_length=1, max_length=50)
-    birth_date: Optional[date] = Field(default=None)
-
-
-class User(UserData):
-    user_id: UUID = Field(...)
-
-
-class UserRegister(User):
-    pass
-
-
-class UserInDB(UserRegister):
-    hashed_password: str = Field(...)
-
-
-class Tweet(BaseModel):
-    tweet_id: UUID = Field(..., alias="Tweet id")
-    content: str = Field(..., min_length=1, max_length=280, example="My first tweet!")
-    created_at: datetime = Field(default=datetime.now())
-    updated_at: Optional[datetime] = Field(default=None)
-    by: User = Field(..., alias="User")
 
 
 @app.get(
@@ -79,7 +39,7 @@ def home():
     summary="Register a user",
     tags=["Auth"],
 )
-def signup(user: UserRegister = Body(...)):
+def signup(user: UserRegister = Body(...), db: Session = Depends(get_db)):
     """
     Signup
 
@@ -95,7 +55,10 @@ def signup(user: UserRegister = Body(...)):
         - last_name: str
         - birth_date: date
     """
-    user_result = User(**user.dict(), user_id=uuid.uuid4())
+    exists = get_user_by_email(db, user.email)
+    if exists:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user_result = create_new_user(user, db)
     return user_result
 
 

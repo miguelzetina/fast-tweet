@@ -4,3 +4,4 @@ uvicorn
 black
 sqlalchemy
 psycopg2
+passlib[bcrypt]
