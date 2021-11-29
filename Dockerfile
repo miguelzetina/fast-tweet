@@ -11,6 +11,7 @@ RUN apk add postgresql-dev \
             g++ \
             libffi-dev
 
-COPY . /usr/src
+COPY requirements.txt $SITE_DIR/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+COPY . $SITE_DIR
