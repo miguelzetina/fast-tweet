@@ -27,6 +27,4 @@ class Tweet(Base):
         server_onupdate=func.now(),
     )
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    user = relationship(
-        "User", foreign_keys=[user_id], back_populates="tweets"
-    )
+    user = relationship("User", foreign_keys=[user_id], back_populates="tweets")
