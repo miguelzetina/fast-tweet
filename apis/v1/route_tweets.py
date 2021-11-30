@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
 from apis.v1.route_auth import get_current_user_from_token
-from db.repository.tweets import create_new_tweet
+from db.repository.tweets import (
+    create_new_tweet,
+    deactivate_tweet,
+    get_tweet,
+    update_content_tweet,
+)
 from schemas.tweets import Tweet, TweetCreate
 from db.models.users import User
 from db.session import get_db
@@ -49,8 +54,14 @@ def post_tweet(
     summary="Show a tweet",
     tags=["Tweets"],
 )
-def show_tweet():
-    pass
+def show_tweet(
+    tweet_id: str,
+    db: Session = Depends(get_db),
+):
+    tweet = get_tweet(db, tweet_id)
+    if not tweet:
+        raise HTTPException(status_code=404, detail="Tweet not found")
+    return tweet
 
 
 @router.delete(
@@ -59,15 +70,35 @@ def show_tweet():
     summary="Delete a tweet",
     tags=["Tweets"],
 )
-def delete_tweet():
-    pass
+def delete_tweet(
+    tweet_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+):
+    tweet = get_tweet(db, tweet_id)
+    if not tweet or not tweet.is_active:
+        raise HTTPException(status_code=404, detail="Tweet not found")
+    if tweet.user != current_user:
+        raise HTTPException(status_code=403, detail="You are not authorized")
+    deactivate_tweet(db, tweet_id)
 
 
 @router.put(
     path="/{tweet_id}",
     status_code=status.HTTP_200_OK,
+    response_model=Tweet,
     summary="Update a tweet",
     tags=["Tweets"],
 )
-def update_tweet():
-    pass
+def update_tweet(
+    tweet_id: str,
+    tweet: TweetCreate = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+):
+    active_tweet = get_tweet(db, tweet_id)
+    if not active_tweet or not active_tweet.is_active:
+        raise HTTPException(status_code=404, detail="Tweet not found")
+    if active_tweet.user != current_user:
+        raise HTTPException(status_code=403, detail="You are not authorized")
+    return update_content_tweet(db, active_tweet, tweet.content)

@@ -1,9 +1,19 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, Depends, HTTPException
+from sqlalchemy.orm import Session
 from starlette import status
 
-from schemas.users import User
+from apis.v1.route_auth import get_current_user_from_token
+from db.repository.users import (
+    get_all_users,
+    deactivate_user,
+    get_user,
+    update_data_user,
+)
+from db.session import get_db
+from schemas.users import User, UserBasicData
+from db.models.users import User as UserModel
 
 router = APIRouter()
 
@@ -15,7 +25,7 @@ router = APIRouter()
     summary="Show all users",
     tags=["Users"],
 )
-def show_all_users():
+def show_all_users(db: Session = Depends(get_db)):
     """
     List users
 
@@ -30,7 +40,7 @@ def show_all_users():
         - last_name: str
         - birth_date: date
     """
-    pass
+    return get_all_users(db)
 
 
 @router.get(
@@ -40,18 +50,31 @@ def show_all_users():
     summary="Show a user",
     tags=["Users"],
 )
-def show_user():
-    pass
+def show_user(user_id: str, db: Session = Depends(get_db)):
+    user = get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @router.delete(
     path="/{user_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
     summary="Delete a user",
     tags=["Users"],
 )
-def delete_user():
-    pass
+def delete_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user_from_token),
+):
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="You are not authorized")
+
+    if not get_user(db, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+    deactivate_user(db, user_id)
 
 
 @router.put(
@@ -61,5 +84,16 @@ def delete_user():
     summary="Update a user",
     tags=["Users"],
 )
-def update_user():
-    pass
+def update_user(
+    user_id: str,
+    user_data: UserBasicData = Body(...),
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user_from_token),
+):
+    if str(current_user.id) != user_id or not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="You are not authorized")
+
+    if not get_user(db, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return update_data_user(db, user_id, user_data.dict())

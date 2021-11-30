@@ -2,7 +2,7 @@ from datetime import date
 from typing import Optional
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from schemas.mixins import PasswordMixin, EmailMixin
 
@@ -11,10 +11,14 @@ class UserLogin(PasswordMixin, EmailMixin):
     pass
 
 
-class UserData(EmailMixin):
+class UserBasicData(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=50)
     last_name: str = Field(..., min_length=1, max_length=50)
     birth_date: Optional[date] = Field(default=None)
+
+
+class UserData(UserBasicData, EmailMixin):
+    pass
 
 
 class User(UserData):

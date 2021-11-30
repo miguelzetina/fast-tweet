@@ -23,3 +23,26 @@ def create_new_user(user: UserRegister, db: Session):
 
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email.lower()).first()
+
+
+def deactivate_user(db: Session, user_id: str):
+    user = db.query(User).filter(User.id == user_id).first()
+    user.is_active = False
+    db.commit()
+    db.refresh(user)
+
+
+def get_all_users(db: Session):
+    return db.query(User).all()
+
+
+def get_user(db: Session, user_id: str):
+    return db.query(User).filter(User.id == user_id).first()
+
+
+def update_data_user(db: Session, user_id: str, user_data: dict):
+    user = db.query(User).filter(User.id == user_id)
+    user.update(user_data)
+    db.commit()
+    db.refresh(user.first())
+    return user.first()
