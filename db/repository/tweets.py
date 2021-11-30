@@ -31,3 +31,7 @@ def update_content_tweet(db: Session, tweet: Tweet, content: str):
     db.commit()
     db.refresh(tweet)
     return tweet
+
+
+def get_all_tweets(db: Session):
+    return db.query(Tweet).all()
