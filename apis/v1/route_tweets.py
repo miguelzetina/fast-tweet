@@ -1,7 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, Depends
+from sqlalchemy.orm import Session
 from starlette import status
 
-from schemas.tweets import Tweet
+from apis.v1.route_auth import get_current_user_from_token
+from db.repository.tweets import create_new_tweet
+from schemas.tweets import Tweet, TweetCreate
+from db.models.users import User
+from db.session import get_db
 
 router = APIRouter()
 
@@ -13,7 +18,11 @@ router = APIRouter()
     summary="Post a tweet",
     tags=["Tweets"],
 )
-def post_tweet():
+def post_tweet(
+    tweet: TweetCreate = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+):
     """
     Post a tweet
 
@@ -30,7 +39,7 @@ def post_tweet():
         updated_at: Optional[datetime]
         by: User
     """
-    pass
+    return create_new_tweet(db, tweet, current_user)
 
 
 @router.get(

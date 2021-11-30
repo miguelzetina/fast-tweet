@@ -2,7 +2,7 @@ from datetime import date
 from typing import Optional
 from uuid import UUID
 
-from pydantic import Field, validator
+from pydantic import Field
 
 from schemas.mixins import PasswordMixin, EmailMixin
 
