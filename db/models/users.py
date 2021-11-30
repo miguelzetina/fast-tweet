@@ -1,5 +1,14 @@
 import uuid
-from sqlalchemy import Boolean, Column, String, Date, DateTime, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Date,
+    ForeignKey,
+    String,
+    Table,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -34,3 +43,18 @@ class User(Base):
     tweets = relationship(
         "Tweet", foreign_keys="[Tweet.user_id]", back_populates="user"
     )
+    following = relationship(
+        "User",
+        lambda: user_following,
+        primaryjoin=lambda: User.id == user_following.c.user_id,
+        secondaryjoin=lambda: User.id == user_following.c.following_id,
+        backref="followers",
+    )
+
+
+user_following = Table(
+    "user_following",
+    Base.metadata,
+    Column("user_id", UUID(as_uuid=True), ForeignKey(User.id), primary_key=True),
+    Column("following_id", UUID(as_uuid=True), ForeignKey(User.id), primary_key=True),
+)
