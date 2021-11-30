@@ -13,7 +13,7 @@ class Tweet(Base):
         index=True,
         default=uuid.uuid4,
     )
-    content = Column(String, nullable=False)
+    content = Column(String(250), nullable=False)
     is_active = Column(Boolean(), default=True)
     created_at = Column(
         DateTime,
