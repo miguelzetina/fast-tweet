@@ -46,3 +46,15 @@ def update_data_user(db: Session, user_id: str, user_data: dict):
     db.commit()
     db.refresh(user.first())
     return user.first()
+
+
+def follow_a_user(db: Session, user: User, user_id: str):
+    user_to_follow = db.query(User).filter(User.id == user_id).first()
+    user.following.append(user_to_follow)
+    db.commit()
+
+
+def unfollow_a_user(db: Session, user: User, user_id: str):
+    user_to_follow = db.query(User).filter(User.id == user_id).first()
+    user.following.remove(user_to_follow)
+    db.commit()

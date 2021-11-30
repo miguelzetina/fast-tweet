@@ -6,9 +6,11 @@ from starlette import status
 
 from apis.v1.route_auth import get_current_user_from_token
 from db.repository.users import (
-    get_all_users,
     deactivate_user,
+    follow_a_user,
+    get_all_users,
     get_user,
+    unfollow_a_user,
     update_data_user,
 )
 from db.session import get_db
@@ -97,3 +99,38 @@ def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     return update_data_user(db, user_id, user_data.dict())
+
+
+@router.post(
+    path="/{user_id}/follow",
+    status_code=status.HTTP_200_OK,
+    summary="Follow a user",
+    tags=["Users"],
+)
+def follow_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user_from_token),
+):
+
+    if not get_user(db, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+    follow_a_user(db, current_user, user_id)
+
+
+@router.delete(
+    path="/{user_id}/unfollow",
+    status_code=status.HTTP_200_OK,
+    summary="Unfollow a user",
+    tags=["Users"],
+)
+def unfollow_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user_from_token),
+):
+    if not get_user(db, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+    unfollow_a_user(db, current_user, user_id)
