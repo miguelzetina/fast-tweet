@@ -12,7 +12,6 @@ router = APIRouter()
 
 @router.get(
     path="",
-    tags=["Home"],
     response_model=List[Tweet],
     status_code=status.HTTP_200_OK,
     summary="Show all tweets",

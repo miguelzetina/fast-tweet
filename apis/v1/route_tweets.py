@@ -21,7 +21,6 @@ router = APIRouter()
     response_model=Tweet,
     status_code=status.HTTP_201_CREATED,
     summary="Post a tweet",
-    tags=["Tweets"],
 )
 def post_tweet(
     tweet: TweetCreate = Body(...),
@@ -52,7 +51,6 @@ def post_tweet(
     response_model=Tweet,
     status_code=status.HTTP_200_OK,
     summary="Show a tweet",
-    tags=["Tweets"],
 )
 def show_tweet(
     tweet_id: str,
@@ -68,7 +66,6 @@ def show_tweet(
     path="/{tweet_id}",
     status_code=status.HTTP_200_OK,
     summary="Delete a tweet",
-    tags=["Tweets"],
 )
 def delete_tweet(
     tweet_id: str,
@@ -88,7 +85,6 @@ def delete_tweet(
     status_code=status.HTTP_200_OK,
     response_model=Tweet,
     summary="Update a tweet",
-    tags=["Tweets"],
 )
 def update_tweet(
     tweet_id: str,

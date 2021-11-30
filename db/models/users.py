@@ -49,6 +49,7 @@ class User(Base):
         primaryjoin=lambda: User.id == user_following.c.user_id,
         secondaryjoin=lambda: User.id == user_following.c.following_id,
         backref="followers",
+        lazy="dynamic",
     )
 
 

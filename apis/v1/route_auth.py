@@ -33,7 +33,6 @@ def authenticate_user(email: str, password: str, db: Session):
     response_model=User,
     status_code=status.HTTP_201_CREATED,
     summary="Register a user",
-    tags=["Auth"],
 )
 def signup(user: UserRegister = Body(...), db: Session = Depends(get_db)):
     """
@@ -63,7 +62,6 @@ def signup(user: UserRegister = Body(...), db: Session = Depends(get_db)):
     response_model=Token,
     status_code=status.HTTP_200_OK,
     summary="Login a user",
-    tags=["Auth"],
 )
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)

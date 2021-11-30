@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from schemas.users import UserRegister
-from db.models.users import User
+from db.models.users import User, user_following
 from core.hashing import Hasher
 
 
@@ -58,3 +58,7 @@ def unfollow_a_user(db: Session, user: User, user_id: str):
     user_to_follow = db.query(User).filter(User.id == user_id).first()
     user.following.remove(user_to_follow)
     db.commit()
+
+
+def following_user(user: User, user_id: str):
+    return user.following.filter(user_following.c.following_id == user_id).first()

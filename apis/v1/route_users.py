@@ -8,6 +8,7 @@ from apis.v1.route_auth import get_current_user_from_token
 from db.repository.users import (
     deactivate_user,
     follow_a_user,
+    following_user,
     get_all_users,
     get_user,
     unfollow_a_user,
@@ -25,7 +26,6 @@ router = APIRouter()
     response_model=List[User],
     status_code=status.HTTP_200_OK,
     summary="Show all users",
-    tags=["Users"],
 )
 def show_all_users(db: Session = Depends(get_db)):
     """
@@ -50,7 +50,6 @@ def show_all_users(db: Session = Depends(get_db)):
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Show a user",
-    tags=["Users"],
 )
 def show_user(user_id: str, db: Session = Depends(get_db)):
     user = get_user(db, user_id)
@@ -63,7 +62,6 @@ def show_user(user_id: str, db: Session = Depends(get_db)):
     path="/{user_id}",
     status_code=status.HTTP_200_OK,
     summary="Delete a user",
-    tags=["Users"],
 )
 def delete_user(
     user_id: str,
@@ -84,7 +82,6 @@ def delete_user(
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Update a user",
-    tags=["Users"],
 )
 def update_user(
     user_id: str,
@@ -105,16 +102,18 @@ def update_user(
     path="/{user_id}/follow",
     status_code=status.HTTP_200_OK,
     summary="Follow a user",
-    tags=["Users"],
 )
 def follow_user(
     user_id: str,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user_from_token),
 ):
-
     if not get_user(db, user_id):
         raise HTTPException(status_code=404, detail="User not found")
+
+    user_is_followed = following_user(current_user, user_id)
+    if user_is_followed:
+        return
 
     follow_a_user(db, current_user, user_id)
 
@@ -123,14 +122,14 @@ def follow_user(
     path="/{user_id}/unfollow",
     status_code=status.HTTP_200_OK,
     summary="Unfollow a user",
-    tags=["Users"],
 )
 def unfollow_user(
     user_id: str,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user_from_token),
 ):
-    if not get_user(db, user_id):
+    user_is_followed = following_user(current_user, user_id)
+    if not get_user(db, user_id) or not user_is_followed:
         raise HTTPException(status_code=404, detail="User not found")
 
     unfollow_a_user(db, current_user, user_id)
