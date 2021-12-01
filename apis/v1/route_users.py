@@ -60,7 +60,7 @@ def show_user(user_id: str, db: Session = Depends(get_db)):
 
 @router.delete(
     path="/{user_id}",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a user",
 )
 def delete_user(
@@ -100,7 +100,7 @@ def update_user(
 
 @router.post(
     path="/{user_id}/follow",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Follow a user",
 )
 def follow_user(
@@ -120,7 +120,7 @@ def follow_user(
 
 @router.delete(
     path="/{user_id}/unfollow",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Unfollow a user",
 )
 def unfollow_user(

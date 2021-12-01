@@ -64,7 +64,7 @@ def show_tweet(
 
 @router.delete(
     path="/{tweet_id}",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a tweet",
 )
 def delete_tweet(
