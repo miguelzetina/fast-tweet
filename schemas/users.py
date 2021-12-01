@@ -30,3 +30,8 @@ class User(UserData):
 
 class UserRegister(UserData, PasswordMixin):
     pass
+
+
+class UserDetail(User):
+    following_count: int
+    followers_count: int

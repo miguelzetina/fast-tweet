@@ -8,9 +8,10 @@ from sqlalchemy import (
     String,
     Table,
     func,
+    select,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import column_property, object_session, relationship
 
 from db.base_class import Base
 
@@ -48,9 +49,23 @@ class User(Base):
         lambda: user_following,
         primaryjoin=lambda: User.id == user_following.c.user_id,
         secondaryjoin=lambda: User.id == user_following.c.following_id,
-        backref="followers",
         lazy="dynamic",
     )
+    followers = relationship(
+        "User",
+        lambda: user_following,
+        primaryjoin=lambda: User.id == user_following.c.following_id,
+        secondaryjoin=lambda: User.id == user_following.c.user_id,
+        lazy="dynamic",
+    )
+
+    @property
+    def following_count(self):
+        return self.following.count()
+
+    @property
+    def followers_count(self):
+        return self.followers.count()
 
 
 user_following = Table(

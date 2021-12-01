@@ -7,3 +7,7 @@ class PasswordMixin(BaseModel):
 
 class EmailMixin(BaseModel):
     email: EmailStr = Field(...)
+
+
+class Detail(BaseModel):
+    detail: str

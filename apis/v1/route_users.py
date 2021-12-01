@@ -15,7 +15,8 @@ from db.repository.users import (
     update_data_user,
 )
 from db.session import get_db
-from schemas.users import User, UserBasicData
+from schemas.users import User, UserBasicData, UserDetail
+from schemas.mixins import Detail
 from db.models.users import User as UserModel
 
 router = APIRouter()
@@ -46,10 +47,24 @@ def show_all_users(db: Session = Depends(get_db)):
 
 
 @router.get(
+    path="/me",
+    response_model=UserDetail,
+    status_code=status.HTTP_200_OK,
+    summary="Show current user data",
+)
+def me(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user_from_token),
+):
+    return current_user
+
+
+@router.get(
     path="/{user_id}",
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Show a user",
+    responses={404: {"model": Detail}},
 )
 def show_user(user_id: str, db: Session = Depends(get_db)):
     user = get_user(db, user_id)
@@ -62,6 +77,7 @@ def show_user(user_id: str, db: Session = Depends(get_db)):
     path="/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a user",
+    responses={403: {"model": Detail}, 404: {"model": Detail}},
 )
 def delete_user(
     user_id: str,
@@ -82,6 +98,7 @@ def delete_user(
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Update a user",
+    responses={403: {"model": Detail}, 404: {"model": Detail}},
 )
 def update_user(
     user_id: str,
@@ -102,12 +119,16 @@ def update_user(
     path="/{user_id}/follow",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Follow a user",
+    responses={400: {"model": Detail}, 404: {"model": Detail}},
 )
 def follow_user(
     user_id: str,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user_from_token),
 ):
+    if str(current_user.id) == user_id:
+        raise HTTPException(status_code=400, detail="You cannot follow you")
+
     if not get_user(db, user_id):
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -122,14 +143,21 @@ def follow_user(
     path="/{user_id}/unfollow",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Unfollow a user",
+    responses={400: {"model": Detail}, 404: {"model": Detail}},
 )
 def unfollow_user(
     user_id: str,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user_from_token),
 ):
-    user_is_followed = following_user(current_user, user_id)
-    if not get_user(db, user_id) or not user_is_followed:
+    if str(current_user.id) == user_id:
+        raise HTTPException(status_code=400, detail="You cannot unfollow you")
+
+    if not get_user(db, user_id):
         raise HTTPException(status_code=404, detail="User not found")
+
+    user_is_followed = following_user(current_user, user_id)
+    if not user_is_followed:
+        return
 
     unfollow_a_user(db, current_user, user_id)

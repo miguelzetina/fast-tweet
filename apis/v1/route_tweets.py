@@ -9,6 +9,7 @@ from db.repository.tweets import (
     get_tweet,
     update_content_tweet,
 )
+from schemas.mixins import Detail
 from schemas.tweets import Tweet, TweetCreate
 from db.models.users import User
 from db.session import get_db
@@ -51,6 +52,7 @@ def post_tweet(
     response_model=Tweet,
     status_code=status.HTTP_200_OK,
     summary="Show a tweet",
+    responses={404: {"model": Detail}},
 )
 def show_tweet(
     tweet_id: str,
@@ -66,6 +68,7 @@ def show_tweet(
     path="/{tweet_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a tweet",
+    responses={403: {"model": Detail}, 404: {"model": Detail}},
 )
 def delete_tweet(
     tweet_id: str,
@@ -85,6 +88,7 @@ def delete_tweet(
     status_code=status.HTTP_200_OK,
     response_model=Tweet,
     summary="Update a tweet",
+    responses={403: {"model": Detail}, 404: {"model": Detail}},
 )
 def update_tweet(
     tweet_id: str,

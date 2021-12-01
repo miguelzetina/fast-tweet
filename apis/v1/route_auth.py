@@ -11,6 +11,7 @@ from core.hashing import Hasher
 from core.security import create_access_token
 from db.repository.users import get_user_by_email, create_new_user
 from db.session import get_db
+from schemas.mixins import Detail
 from schemas.tokens import Token
 from schemas.users import User, UserRegister
 from jose import JWTError, jwt
@@ -33,6 +34,7 @@ def authenticate_user(email: str, password: str, db: Session):
     response_model=User,
     status_code=status.HTTP_201_CREATED,
     summary="Register a user",
+    responses={400: {"model": Detail}},
 )
 def signup(user: UserRegister = Body(...), db: Session = Depends(get_db)):
     """
@@ -62,6 +64,7 @@ def signup(user: UserRegister = Body(...), db: Session = Depends(get_db)):
     response_model=Token,
     status_code=status.HTTP_200_OK,
     summary="Login a user",
+    responses={401: {"model": Detail}},
 )
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
