@@ -7,6 +7,8 @@ from db.repository.tweets import (
     create_new_tweet,
     deactivate_tweet,
     get_tweet,
+    mark_tweet_as_liked,
+    mark_tweet_as_unliked,
     update_content_tweet,
 )
 from schemas.mixins import Detail
@@ -102,3 +104,39 @@ def update_tweet(
     if active_tweet.user != current_user:
         raise HTTPException(status_code=403, detail="You are not authorized")
     return update_content_tweet(db, active_tweet, tweet.content)
+
+
+@router.post(
+    path="/{tweet_id}/like",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Like a tweet",
+    responses={404: {"model": Detail}},
+)
+def like_tweet(
+    tweet_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+):
+    tweet_to_like = get_tweet(db, tweet_id)
+    if not tweet_to_like:
+        raise HTTPException(status_code=404, detail="Tweet not found")
+
+    mark_tweet_as_liked(db, tweet_to_like, current_user)
+
+
+@router.delete(
+    path="/{tweet_id}/like",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Unlike a tweet",
+    responses={404: {"model": Detail}},
+)
+def unlike_tweet(
+    tweet_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+):
+    tweet_to_unlike = get_tweet(db, tweet_id)
+    if not tweet_to_unlike:
+        raise HTTPException(status_code=404, detail="Tweet not found")
+
+    mark_tweet_as_unliked(db, tweet_to_unlike, current_user)

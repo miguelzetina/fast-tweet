@@ -140,7 +140,7 @@ def follow_user(
 
 
 @router.delete(
-    path="/{user_id}/unfollow",
+    path="/{user_id}/follow",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Unfollow a user",
     responses={400: {"model": Detail}, 404: {"model": Detail}},

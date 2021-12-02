@@ -12,6 +12,7 @@ class Tweet(BaseModel):
     created_at: datetime
     updated_at: datetime
     user: User
+    likes_count: int
 
     class Config:
         orm_mode = True
